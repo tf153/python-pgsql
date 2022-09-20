@@ -4,7 +4,7 @@ class PgsqlConn:
     def __init__(self,config:dict) -> None:
         try:
             self.conn=psycopg2.connect(database=config['db'], user=config['user'], password=config['password'], host=config['host'], port= config['port'])
-            self.conn.autocommit = True
+            # self.conn.autocommit = True
             self.cursor = self.conn.cursor()
         except:
             print('Error in connection')
@@ -14,6 +14,7 @@ class PgsqlConn:
     def execute(self,sql:str)->bool:
         try:
             self.cursor.execute(sql)
+            self.conn.commit()
             # data = obj.cursor.fetchone()
             # print(data)
             return True
@@ -21,7 +22,7 @@ class PgsqlConn:
             return False
 
     def createDb(self,dbName:str) -> None:
-        sql = "CREATE database "+dbName
+        sql = "CREATE DATABASE "+dbName
         out="Database "+dbName+" created successfully :)" if(self.execute(sql)) else "Error creating database :("
         print(out)
 
@@ -45,9 +46,11 @@ class PgsqlConn:
         sql=sql[:-1]+") VALUES("
         for _ in values:
             for __ in _:
-                sql+=__+','
+                sql+="'"+__+"'"+','
         sql=sql[:-1]+");"
-        print(sql)
+        # print(sql)
+        out="Inserted successfully :)" if(self.execute(sql)) else "Error inserting :("
+        print(out)
 
     def __del__(self):
         self.cursor.close()
@@ -55,7 +58,7 @@ class PgsqlConn:
 
 
 myDb={
-    'db':'keycloak',
+    'db':'rj',
     'user':'keycloak',
     'password':'password',
     'host':'127.0.0.1',
@@ -63,7 +66,7 @@ myDb={
 }
 
 myTable={
-    'tableName':'Test',
+    'tableName':'test1',
     'attributes':{
         'uid':'VARCHAR',
         'count':'INT'
@@ -73,7 +76,7 @@ myTable={
 myValues=[["abc123","1"]]
 
 obj=PgsqlConn(myDb)
-obj.createDb("RJ")
+# obj.createDb("rj")
 obj.createTable(myTable)
 obj.insertTable(myTable,myValues)
 
